@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Mini Minesweeper</title>
+
+<style>
+
+body{
+    font-family:Arial,sans-serif;
+    background:#1e293b;
+    color:white;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+#board{
+    display:grid;
+    grid-template-columns:repeat(10,40px);
+    gap:3px;
+    margin-top:20px;
+}
+
+.cell{
+    width:40px;
+    height:40px;
+    background:#64748b;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-weight:bold;
+    cursor:pointer;
+    border-radius:4px;
+}
+
+.revealed{
+    background:#e2e8f0;
+    color:#111;
+}
+
+.mine{
+    background:red;
+}
+
+
+button{
+    margin-top:15px;
+    padding:10px 20px;
+    font-size:16px;
+}
+
+
+#warningScreen{
+
+    display:none;
+
+    position:fixed;
+
+    top:0;
+    left:0;
+
+    width:100%;
+    height:100%;
+
+    background:red;
+
+    color:white;
+
+    justify-content:center;
+    align-items:center;
+
+    flex-direction:column;
+
+    z-index:999;
+
+    animation:flash .3s infinite;
+
+}
+
+
+#warningScreen h1{
+
+    font-size:50px;
+
+}
+
+
+#warningVideo{
+
+    width:300px;
+    margin-top:20px;
+
+}
+
+
+
+@keyframes flash{
+
+0%{
+background:red;
+}
+
+50%{
+background:black;
+}
+
+100%{
+background:red;
+}
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<h1>💣 Mini Minesweeper</h1>
+
+
+<button onclick="startGame()">Restart</button>
+
+
+
+<audio id="loseSound" preload="auto">
+
+    <source src="lose.mp3" type="audio/mpeg">
+
+</audio>
+
+
+
+<div id="warningScreen">
+
+<h1>⚠️ WARNING ⚠️</h1>
+
+<p>YOU HIT A MINE!</p>
+
+
+<video id="warningVideo" muted loop>
+
+<source src="warning.mp4" type="video/mp4">
+
+</video>
+
+
+</div>
+
+
+
+
+<div id="board"></div>
+
+
+
+
+<script>
+
+
+const board=document.getElementById("board");
+
+const loseSound=document.getElementById("loseSound");
+
+const warningScreen=document.getElementById("warningScreen");
+
+const warningVideo=document.getElementById("warningVideo");
+
+
+const size=10;
+
+const mines=15;
+
+
+let cells=[];
+
+
+
+function startGame(){
+
+
+    // STOP SOUND AND VIDEO
+
+    loseSound.pause();
+
+    loseSound.currentTime=0;
+
+
+    warningVideo.pause();
+
+    warningVideo.currentTime=0;
+
+
+    warningScreen.style.display="none";
+
+
+
+    board.innerHTML="";
+
+    cells=[];
+
+
+
+
+    for(let i=0;i<size*size;i++){
+
+
+        let cell=document.createElement("div");
+
+
+        cell.className="cell";
+
+
+        cell.dataset.mine="false";
+
+
+        board.appendChild(cell);
+
+
+        cells.push(cell);
+
+
+    }
+
+
+
+
+
+    let placed=0;
+
+
+    while(placed<mines){
+
+
+        let random=Math.floor(Math.random()*cells.length);
+
+
+
+        if(cells[random].dataset.mine==="false"){
+
+
+            cells[random].dataset.mine="true";
+
+
+            placed++;
+
+
+        }
+
+
+    }
+
+
+
+
+
+    cells.forEach(cell=>{
+
+
+        cell.onclick=function(){
+
+
+
+            if(cell.classList.contains("revealed"))
+            return;
+
+
+
+            cell.classList.add("revealed");
+
+
+
+            if(cell.dataset.mine==="true"){
+
+
+
+                cell.classList.add("mine");
+
+
+                cell.innerHTML="💣";
+
+
+
+                warningScreen.style.display="flex";
+
+
+
+                // PLAY SOUND
+
+                loseSound.currentTime=0;
+
+                loseSound.play();
+
+
+
+                // PLAY VIDEO
+
+                warningVideo.currentTime=0;
+
+                warningVideo.play();
+
+
+
+
+                setTimeout(()=>{
+
+
+                    alert("💀 GAME OVER 💀");
+
+
+                    startGame();
+
+
+                },5000);
+
+
+
+            }
+
+
+
+            else{
+
+
+                cell.innerHTML="✅";
+
+
+
+                let safe=document.querySelectorAll(
+                ".revealed:not(.mine)"
+                ).length;
+
+
+
+                if(safe===size*size-mines){
+
+
+                    alert("🎉 YOU WIN! 🎉");
+
+
+                    startGame();
+
+
+                }
+
+
+            }
+
+
+        };
+
+
+
+    });
+
+
+
+}
+
+
+
+startGame();
+
+
+</script>
+
+
+</body>
+</html>
